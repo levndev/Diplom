@@ -1,17 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LightGenerator : MonoBehaviour
 {
-    [SerializeField] private GameObject lightPrefab;
+    [SerializeField] private GameObject hoveringLightPrefab;
+    [SerializeField] private GameObject wallLightPrefab;
     [SerializeField] private Comparison.Type comparison;
     [SerializeField] private float minDistance;
     [SerializeField] private int maxAmount;
+    [SerializeField] private float maxWallAttachDistance;
+
+    private class LightData
+    {
+        public Vector3 position;
+        public Vector3 direction;
+        public bool attachedToWall = false;
+        public LightData(Vector3 position, Vector3 direction)
+        {
+            this.position = position;
+            this.direction = direction;
+        }
+    }
 
     public void GenerateLights(float[][][] noise, TileData[][][] tiles, Vector3Int size, GameObject levelGeometry)
     {
-        List<Vector3Int> lights = new();
+        List<LightData> lights = new();
 
         for (int x = 0; x < size.x; x++)
         {
@@ -30,9 +45,9 @@ public class LightGenerator : MonoBehaviour
                         }
                         if (placeLight)
                         {
-                            foreach(var lightPos in lights)
+                            foreach(var other in lights)
                             {
-                                if ((current - lightPos).magnitude < minDistance)
+                                if ((current - other.position).magnitude < minDistance)
                                 {
                                     placeLight = false;
                                 }
@@ -40,7 +55,7 @@ public class LightGenerator : MonoBehaviour
                         }
                         if (placeLight)
                         {
-                            lights.Add(current);
+                            lights.Add(new LightData(current, Vector3.zero));
                         }
                     }
                 }
@@ -56,11 +71,46 @@ public class LightGenerator : MonoBehaviour
             }
         }
 
-
-        foreach(var lightPosition in lights)
+        for (int i = 0; i < lights.Count; i++)
         {
-            var light = Instantiate(lightPrefab, levelGeometry.transform);
-            light.transform.localPosition = lightPosition;
+            var directions = GenerationUtils.OrthoDirections;
+            List<RaycastHit> hits = new();
+            foreach(var direction in directions)
+            {
+                if (Physics.Raycast(lights[i].position, direction, out var hit, maxWallAttachDistance))
+                {
+                    hits.Add(hit);
+                }
+            }
+            if (hits.Count > 0)
+            {
+                var closest = hits.OrderBy(x => x.distance).First();
+                lights[i].position = closest.point;
+                lights[i].direction = closest.normal;
+                lights[i].attachedToWall = true;
+            }
+        }
+
+        foreach (var lightData in lights)
+        {
+            if (lightData.attachedToWall)
+            {
+                if (wallLightPrefab != null)
+                {
+                    var light = Instantiate(wallLightPrefab, levelGeometry.transform);
+                    light.transform.localPosition = lightData.position;
+                    light.transform.rotation =
+                        Quaternion.LookRotation(lightData.direction, Vector3.up);
+                }
+            }
+            else
+            {
+                if (hoveringLightPrefab!= null)
+                {
+                    var light = Instantiate(hoveringLightPrefab, levelGeometry.transform);
+                    light.transform.localPosition = lightData.position;
+                }
+            }
         }
 
         Debug.Log(string.Format("{0} Lights generated", lights.Count));

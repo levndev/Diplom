@@ -155,6 +155,55 @@ MonoBehaviour:
       m_Calls: []
   raycastRange: 0
   targetTagName: 
+--- !u!1 &712127509
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 712127511}
+  - component: {fileID: 712127510}
+  m_Layer: 0
+  m_Name: Global Volume
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &712127510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712127509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: e4cc1e3d27d25be459710e1fc5cff543, type: 2}
+--- !u!4 &712127511
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712127509}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &791382887
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -335,7 +384,7 @@ GameObject:
   - component: {fileID: 829835065}
   - component: {fileID: 829835064}
   - component: {fileID: 829835066}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: LevelGeometry
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -565,11 +614,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3332813f398264241a38afdf70b89f97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lightPrefab: {fileID: 6132059848678079306, guid: 38808df622e74c14da7a57ea889d0cc4,
+  hoveringLightPrefab: {fileID: 6132059848678079306, guid: 38808df622e74c14da7a57ea889d0cc4,
+    type: 3}
+  wallLightPrefab: {fileID: 7082984760993285969, guid: b2319be81f56b734a9dd3519bf1dfc76,
     type: 3}
   comparison: 3
   minDistance: 10
-  maxAmount: 5
+  maxAmount: 10
+  maxWallAttachDistance: 5
 --- !u!1001 &1702432697
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -758,6 +810,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -5337470035672495634, guid: 2d3a85ecde41a8246a79669975912b74,
+        type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430818, guid: 2d3a85ecde41a8246a79669975912b74,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1222,3 +1279,4 @@ SceneRoots:
   - {fileID: 791382887}
   - {fileID: 390097595434037987}
   - {fileID: 1500787106433477967}
+  - {fileID: 712127511}
