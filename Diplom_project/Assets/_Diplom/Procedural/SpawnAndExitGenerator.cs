@@ -1,0 +1,186 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+
+public class SpawnAndExitGenerator : MonoBehaviour
+{
+    [SerializeField] private GameObject spawnPrefab;
+    [SerializeField] private GameObject exitPrefab;
+
+    private List<BlobData> blobs;
+
+    [SerializeField] private bool drawBlobGizmos;
+    [SerializeField] private bool drawSpawnExitGizmos;
+
+    private Vector3Int spawnPos;
+    private Vector3Int exitPos;
+
+    private class BlobData
+    {
+        public List<Vector3Int> tiles = new();
+        public int size = 0;
+        public Color color;
+    }
+
+    private class FloodFillData
+    {
+        public bool visited = false;
+        public Vector3Int cameFrom;
+    }
+
+
+    public void Generate(TileData[][][] tiles, Vector3Int size)
+    {
+        FloodFillData[][][] fillData;
+
+        fillData = new FloodFillData[size.x][][];
+        for (int x = 0; x < size.x; x++)
+        {
+            fillData[x] = new FloodFillData[size.y][];
+            for (int y = 0; y < size.y; y++)
+            {
+                fillData[x][y] = new FloodFillData[size.z];
+                for (int z = 0; z < size.z; z++)
+                {
+                    fillData[x][y][z] = new FloodFillData();
+                }
+            }
+        }
+
+        blobs = new();
+
+        for (int x = 0; x < size.x; x++)
+        {
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int z = 0; z < size.z; z++)
+                {
+                    TileData tile = tiles[x][y][z];
+                    if (tile.tile == Tile.None && !fillData[x][y][z].visited && !tiles[x][y][z].hollowed)
+                    {
+                        blobs.Add(FloodFill(tiles, fillData, new Vector3Int(x, y, z), size));
+                    }
+                }
+            }
+        }
+        if (blobs.Count > 0)
+        {
+            BlobData biggestBlob = null;
+            int maxSize = int.MinValue;
+            for (int i = 0; i < blobs.Count; i++)
+            {
+                if (blobs[i].size > maxSize)
+                {
+                    maxSize = blobs[i].size;
+                    biggestBlob = blobs[i];
+                }
+            }
+
+            spawnPos = Vector3Int.zero;
+            exitPos = Vector3Int.zero;
+
+            float diagonal = (size - Vector3Int.one * 5).magnitude;
+
+            float maxDistance = float.MinValue;
+            bool found = false;
+            foreach(var i in biggestBlob.tiles)
+            {
+                
+                foreach (var j in biggestBlob.tiles)
+                {
+                    if (i != j)
+                    {
+                        float distance = (j - i).magnitude;
+                        if (distance > maxDistance)
+                        {
+                            maxDistance = distance;
+                            spawnPos = i;
+                            exitPos = j;
+                            if (distance > diagonal)
+                                found = true;
+                        }
+                    }
+                    if (found)
+                        break;
+                }
+                if (found)
+                    break;
+            }
+
+            if (spawnPrefab != null)
+            {
+                var spawn = Instantiate(spawnPrefab);
+                spawn.transform.position = spawnPos;
+            }
+
+            if (exitPrefab != null)
+            {
+                var exit = Instantiate(exitPrefab);
+                exit.transform.position = exitPos;
+            }
+
+            Debug.Log(string.Format("{0} Blobs", blobs.Count));
+            Debug.Log(string.Format("Biggest blob size: {0}", biggestBlob.size));
+        }
+    }
+
+    private BlobData FloodFill(TileData[][][] tiles, FloodFillData[][][] fillData,
+                                Vector3Int pos, Vector3Int size)
+    {
+        BlobData blob = new ();
+        blob.color = Random.ColorHSV();
+        Queue<Vector3Int> frontier = new();
+        frontier.Enqueue(pos);
+        fillData[pos.x][pos.y][pos.z].visited = true;
+        int cycles = 0;
+        while(frontier.Count > 0)
+        {
+            Vector3Int current = frontier.Dequeue();
+            blob.tiles.Add(current);
+            blob.size++;
+            foreach (var direction in GenerationUtils.OrthoDirections)
+            {
+                var next = current + direction;
+                if (GenerationUtils.InBounds(size, next) && !fillData[next.x][next.y][next.z].visited)
+                {
+                    TileData tile = tiles[next.x][next.y][next.z];
+                    if (tile.tile == Tile.None && !tile.hollowed)
+                    {
+                        frontier.Enqueue(next);
+                        fillData[next.x][next.y][next.z].visited = true;
+                        fillData[next.x][next.y][next.z].cameFrom = current;
+                    }
+                }
+            }
+            cycles++;
+            if (cycles > 10000)
+                break;
+        }
+        return blob;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (drawBlobGizmos && blobs != null && blobs.Count > 0)
+        {
+            foreach(var blob in blobs)
+            {
+                Gizmos.color = blob.color;
+                foreach (var tile in blob.tiles)
+                {
+                    Gizmos.DrawWireCube(tile, Vector3.one);
+                }
+            }
+        }
+        if (drawSpawnExitGizmos)
+        {
+            Gizmos.color = Color.white;
+            Gizmos.DrawWireCube(spawnPos, Vector3.one);
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(exitPos, Vector3.one);
+        }
+    }
+
+}

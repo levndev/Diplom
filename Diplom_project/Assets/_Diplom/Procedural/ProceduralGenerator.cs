@@ -10,14 +10,20 @@ using UnityEngine.UIElements;
 
 public class ProceduralGenerator : MonoBehaviour
 {
+    [SerializeField] private bool drawHollowedGizmos;
     [SerializeField] private GameObject levelGeometry;
     [SerializeField] private BlockGenerator blockGenerator;
     [SerializeField] private LightGenerator lightGenerator;
+    [SerializeField] private SpawnAndExitGenerator spawnExitGenerator;
 
     [SerializeField] private Vector3Int generatedSize;
     [SerializeField] private PerlinSettings perlinSettings;
 
     private float seed;
+
+    private TileData[][][] tiles;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -76,10 +82,19 @@ public class ProceduralGenerator : MonoBehaviour
 
         if (blockGenerator != null)
         {
-            var tiles = blockGenerator.GenerateBlocks(noise, generatedSize, levelGeometry);
+            tiles = blockGenerator.GenerateBlocks(noise, generatedSize, levelGeometry);
+
+            if (spawnExitGenerator != null)
+            {
+                spawnExitGenerator.Generate(tiles, generatedSize);
+            }
 
             if (lightGenerator != null)
+            {
                 lightGenerator.GenerateLights(noise, tiles, generatedSize, levelGeometry);
+            }
+
+
         }
 
 
@@ -93,6 +108,26 @@ public class ProceduralGenerator : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
 
+    private void OnDrawGizmos()
+    {
+        if (drawHollowedGizmos)
+        {
+            Gizmos.color = Color.red;
+            for (int y = 0; y < generatedSize.y; y++)
+            {
+                for (int x = 0; x < generatedSize.x; x++)
+                {
+                    for (int z = 0; z < generatedSize.z; z++)
+                    {
+                        if (tiles[x][y][z].hollowed)
+                        {
+                            Gizmos.DrawWireCube(new Vector3(x, y, z), Vector3.one);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

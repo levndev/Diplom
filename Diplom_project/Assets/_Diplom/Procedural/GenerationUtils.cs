@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,24 +20,23 @@ public static class GenerationUtils
 
     public static List<T> GetNeighbours<T>(T[][][] data, Vector3Int pos, Vector3Int size, IReadOnlyList<Vector3Int> directions)
     {
-
-        bool inBounds(Vector3Int point)
-        {
-            return point.x >= 0 && point.x < size.x
-                && point.y >= 0 && point.y < size.y
-                && point.z >= 0 && point.z < size.z;
-        }
-
         List<T> result = new();
 
         foreach (var vector in directions)
         {
             var next = pos + vector;
-            if (inBounds(next))
+            if (InBounds(size, next))
                 result.Add(data[next.x][next.y][next.z]);
         }
 
         return result;
+    }
+
+    public static bool InBounds(Vector3Int size, Vector3Int pos)
+    {
+        return pos.x >= 0 && pos.x < size.x
+        && pos.y >= 0 && pos.y < size.y
+        && pos.z >= 0 && pos.z < size.z;
     }
 
     private static List<Vector3Int> makeAllDirections()
@@ -48,7 +48,7 @@ public static class GenerationUtils
             {
                 foreach (int z in new int[] { -1, 0, 1 })
                 {
-                    if (x is 0 && y is 0 && z is 0)
+                    if (x == 0 && y == 0 && z == 0)
                         continue;
                     result.Add(new(x, y, z));
                 }

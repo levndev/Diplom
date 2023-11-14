@@ -14,6 +14,7 @@ public class TileData
     public Tile tile = Tile.None;
     public int variant;
     public bool hollowed = false;
+
 }
 
 [Serializable]

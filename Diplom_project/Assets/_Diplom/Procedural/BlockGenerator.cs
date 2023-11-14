@@ -55,9 +55,7 @@ public class BlockGenerator : MonoBehaviour
             }
         }
 
-
         List<Vector3Int> toDelete = new();
-
 
         for (int x = 0; x < size.x; x++)
         {
@@ -74,6 +72,7 @@ public class BlockGenerator : MonoBehaviour
                             if (neighbour.tile == Tile.None)
                             {
                                 delete = false;
+                                break;
                             }
                         }
                         if (delete)

@@ -7,6 +7,7 @@ public class PlayerKBMInput : MonoBehaviour
 {
     [SerializeField] private Reference<Vector3> lookDirection;
     [SerializeField] private Reference<Vector3> moveDirection;
+    [SerializeField] private Reference<Vector3> moveSpeedModifier;
     [SerializeField] private float mouseSensitivity;
 
     public void OnLook(InputAction.CallbackContext context)
@@ -25,5 +26,17 @@ public class PlayerKBMInput : MonoBehaviour
         if (!enabled)
             return;
         moveDirection.Set(context.ReadValue<Vector3>());
+    }
+
+    public void OnSlow(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            moveSpeedModifier.Set(new Vector3(0.5f, 0.5f, 0.5f));
+        }
+        else if (context.phase == InputActionPhase.Canceled)
+        {
+            moveSpeedModifier.Set(new Vector3(1, 1, 1));
+        }
     }
 }
