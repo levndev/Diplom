@@ -739,6 +739,7 @@ GameObject:
   - component: {fileID: 829835065}
   - component: {fileID: 829835064}
   - component: {fileID: 829835066}
+  - component: {fileID: 829835067}
   m_Layer: 6
   m_Name: LevelGeometry
   m_TagString: Untagged
@@ -833,6 +834,18 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &829835067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829835062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb0ec87b67085742961e03daa34d6a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &909430471
 GameObject:
   m_ObjectHideFlags: 0
@@ -1100,50 +1113,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1186239190 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1264838327818243681, guid: 5ad44f395ce79cb438fff3bf81042509,
-    type: 3}
-  m_PrefabInstance: {fileID: 7141421207693197752}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1186239194
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1186239190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3332813f398264241a38afdf70b89f97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hoveringLightPrefab: {fileID: 6132059848678079306, guid: 38808df622e74c14da7a57ea889d0cc4,
-    type: 3}
-  wallLightPrefab: {fileID: 7082984760993285969, guid: b2319be81f56b734a9dd3519bf1dfc76,
-    type: 3}
-  comparison: 3
-  minDistance: 10
-  maxAmount: 10
-  maxWallAttachDistance: 5
---- !u!114 &1186239198
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1186239190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3222fc271285704e87c14097096d31a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnPrefab: {fileID: 4656901598156947032, guid: 8325b81821f358f4ea75716e78fc13d1,
-    type: 3}
-  exitPrefab: {fileID: 5745949574807168432, guid: 8c00096e48df1ef43a717e1e46bcbb3b,
-    type: 3}
-  drawBlobGizmos: 0
-  drawSpawnExitGizmos: 0
 --- !u!1 &1258037202
 GameObject:
   m_ObjectHideFlags: 0
@@ -1754,39 +1723,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3019840532545927020, guid: 5ad44f395ce79cb438fff3bf81042509,
         type: 3}
+      propertyPath: navGraph
+      value: 
+      objectReference: {fileID: 829835067}
+    - target: {fileID: 3019840532545927020, guid: 5ad44f395ce79cb438fff3bf81042509,
+        type: 3}
       propertyPath: levelGeometry
       value: 
       objectReference: {fileID: 829835062}
     - target: {fileID: 3019840532545927020, guid: 5ad44f395ce79cb438fff3bf81042509,
         type: 3}
-      propertyPath: lightGenerator
+      propertyPath: enemyGenerator
       value: 
-      objectReference: {fileID: 1186239194}
-    - target: {fileID: 3019840532545927020, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      propertyPath: spawnExitGenerator
-      value: 
-      objectReference: {fileID: 1186239198}
-    - target: {fileID: 4164427788163161997, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      propertyPath: tileVariants.Array.data[0].uv.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4164427788163161997, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      propertyPath: tileVariants.Array.data[1].uv.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4164427788163161997, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      propertyPath: tileVariants.Array.data[1].uv.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4164427788163161997, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      propertyPath: tileVariants.Array.data[2].uv.x
-      value: 0.5
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 7141421207693197753}
     - target: {fileID: 4873669614632331836, guid: 5ad44f395ce79cb438fff3bf81042509,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1840,16 +1789,20 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1264838327818243681, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1186239194}
-    - targetCorrespondingSourceObject: {fileID: 1264838327818243681, guid: 5ad44f395ce79cb438fff3bf81042509,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1186239198}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5ad44f395ce79cb438fff3bf81042509, type: 3}
+--- !u!114 &7141421207693197753 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2807527581750568335, guid: 5ad44f395ce79cb438fff3bf81042509,
+    type: 3}
+  m_PrefabInstance: {fileID: 7141421207693197752}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 024c279fc8b95b242a02ee6ff7c0a770, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -6,7 +6,10 @@ using UnityEngine;
 public enum Tile
 {
     None,
-    Block
+    Block,
+    Spawn,
+    Exit,
+    Light
 }
 
 public class TileData

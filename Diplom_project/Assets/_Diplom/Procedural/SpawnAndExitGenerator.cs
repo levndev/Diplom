@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,8 +31,7 @@ public class SpawnAndExitGenerator : MonoBehaviour
         public Vector3Int cameFrom;
     }
 
-
-    public void Generate(TileData[][][] tiles, Vector3Int size)
+    public Tuple<Vector3Int, Vector3Int> Generate(TileData[][][] tiles, Vector3Int size)
     {
         FloodFillData[][][] fillData;
 
@@ -112,25 +112,29 @@ public class SpawnAndExitGenerator : MonoBehaviour
             if (spawnPrefab != null)
             {
                 var spawn = Instantiate(spawnPrefab);
+                tiles[spawnPos.x][spawnPos.y][spawnPos.z].tile = Tile.None;
                 spawn.transform.position = spawnPos;
             }
 
             if (exitPrefab != null)
             {
                 var exit = Instantiate(exitPrefab);
+                tiles[exitPos.x][exitPos.y][exitPos.z].tile = Tile.None;
                 exit.transform.position = exitPos;
             }
 
             Debug.Log(string.Format("{0} Blobs", blobs.Count));
             Debug.Log(string.Format("Biggest blob size: {0}", biggestBlob.size));
+
         }
+        return new Tuple<Vector3Int, Vector3Int>(spawnPos, exitPos);
     }
 
     private BlobData FloodFill(TileData[][][] tiles, FloodFillData[][][] fillData,
                                 Vector3Int pos, Vector3Int size)
     {
         BlobData blob = new ();
-        blob.color = Random.ColorHSV();
+        blob.color = UnityEngine.Random.ColorHSV();
         Queue<Vector3Int> frontier = new();
         frontier.Enqueue(pos);
         fillData[pos.x][pos.y][pos.z].visited = true;

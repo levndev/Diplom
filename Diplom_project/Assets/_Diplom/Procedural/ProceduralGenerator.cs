@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -15,15 +16,19 @@ public class ProceduralGenerator : MonoBehaviour
     [SerializeField] private BlockGenerator blockGenerator;
     [SerializeField] private LightGenerator lightGenerator;
     [SerializeField] private SpawnAndExitGenerator spawnExitGenerator;
+    [SerializeField] private EnemyGenerator enemyGenerator;
+    [SerializeField] private NavGraph navGraph;
 
     [SerializeField] private Vector3Int generatedSize;
     [SerializeField] private PerlinSettings perlinSettings;
+
+    [SerializeField] private Comparison.Type localMaximumComparison;
 
     private float seed;
 
     private TileData[][][] tiles;
 
-
+    private NavPath path;
 
     // Start is called before the first frame update
     void Start()
@@ -80,23 +85,55 @@ public class ProceduralGenerator : MonoBehaviour
             }
         }
 
+        List<Vector3Int> localMaximums = new();
+        void checkMaximum(Vector3Int current)
+        {
+            foreach (var neighbour in GenerationUtils.GetNeighbours(noise, current,
+                    generatedSize, GenerationUtils.AllDirections))
+            {
+                if (Comparison.Compare(noise[current.x][current.y][current.z],
+                    neighbour, localMaximumComparison))
+                    localMaximums.Add(current);
+            }
+        }
+
         if (blockGenerator != null)
         {
             tiles = blockGenerator.GenerateBlocks(noise, generatedSize, levelGeometry);
+            var spawnAndExit = spawnExitGenerator.Generate(tiles, generatedSize);
 
-            if (spawnExitGenerator != null)
+            for (int x = 0; x < width; x++)
             {
-                spawnExitGenerator.Generate(tiles, generatedSize);
+                for (int y = 0; y < height; y++)
+                {
+                    for (int z = 0; z < length; z++)
+                    {
+                        if (tiles[x][y][z].tile == Tile.None
+                            && !tiles[x][y][z].hollowed)
+                        {
+                            checkMaximum(new Vector3Int(x, y, z));
+                        }
+                    }
+                }
             }
 
             if (lightGenerator != null)
             {
-                lightGenerator.GenerateLights(noise, tiles, generatedSize, levelGeometry);
+                lightGenerator.GenerateLights(tiles, localMaximums, levelGeometry); ;
             }
 
+            if (navGraph != null)
+            {
+                navGraph.UpdateGeometry(tiles, generatedSize);
 
+                path = navGraph.AStar(spawnAndExit.Item1, spawnAndExit.Item2, true);
+
+                if (enemyGenerator != null)
+                {
+                    enemyGenerator.Generate(localMaximums, levelGeometry);
+                }
+            }
         }
-
 
         Debug.Log(string.Format("{0} Time", (DateTime.Now - startTime).TotalSeconds));
     }
@@ -114,7 +151,7 @@ public class ProceduralGenerator : MonoBehaviour
     {
         if (drawHollowedGizmos)
         {
-            Gizmos.color = Color.red;
+            Gizmos.color = UnityEngine.Color.red;
             for (int y = 0; y < generatedSize.y; y++)
             {
                 for (int x = 0; x < generatedSize.x; x++)
@@ -127,6 +164,14 @@ public class ProceduralGenerator : MonoBehaviour
                         }
                     }
                 }
+            }
+        }
+        if (path != null)
+        {
+            Gizmos.color = UnityEngine.Color.red;
+            foreach (var point in path.points)
+            {
+                Gizmos.DrawWireCube(point, Vector3.one);
             }
         }
     }

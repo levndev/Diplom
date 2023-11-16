@@ -1,3 +1,4 @@
+using ProceduralToolkit;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,48 +18,34 @@ public class LightGenerator : MonoBehaviour
         public Vector3 position;
         public Vector3 direction;
         public bool attachedToWall = false;
-        public LightData(Vector3 position, Vector3 direction)
+        public int localMaximumIndex;
+        public LightData(Vector3 position, Vector3 direction, int localMaximumIndex)
         {
             this.position = position;
             this.direction = direction;
+            this.localMaximumIndex = localMaximumIndex;
         }
     }
 
-    public void GenerateLights(float[][][] noise, TileData[][][] tiles, Vector3Int size, GameObject levelGeometry)
+    public void GenerateLights(TileData[][][] tiles, List<Vector3Int> localMaximums, GameObject levelGeometry)
     {
         List<LightData> lights = new();
 
-        for (int x = 0; x < size.x; x++)
+        for (int i = 0; i < localMaximums.Count; i++)
         {
-            for (int y = 0; y < size.y; y++)
+            var current = localMaximums[i];
+            bool placeLight = true;
+            foreach (var other in lights)
             {
-                for (int z = 0; z < size.z; z++)
+                if ((current - other.position).magnitude < minDistance)
                 {
-                    if (tiles[x][y][z].tile == Tile.None && !tiles[x][y][z].hollowed)
-                    {
-                        var current = new Vector3Int(x, y, z);
-                        bool placeLight = true;
-                        foreach (var neighbour in GenerationUtils.GetNeighbours(noise, current, size, GenerationUtils.AllDirections))
-                        {
-                            if (!Comparison.Compare(noise[x][y][z], neighbour, comparison))
-                                placeLight = false;
-                        }
-                        if (placeLight)
-                        {
-                            foreach(var other in lights)
-                            {
-                                if ((current - other.position).magnitude < minDistance)
-                                {
-                                    placeLight = false;
-                                }
-                            }
-                        }
-                        if (placeLight)
-                        {
-                            lights.Add(new LightData(current, Vector3.zero));
-                        }
-                    }
+                    placeLight = false;
                 }
+            }
+
+            if (placeLight)
+            {
+                lights.Add(new LightData(current, Vector3.zero, i));
             }
         }
 
@@ -85,6 +72,9 @@ public class LightGenerator : MonoBehaviour
             if (hits.Count > 0)
             {
                 var closest = hits.OrderBy(x => x.distance).First();
+                Vector3Int pos = localMaximums[lights[i].localMaximumIndex];
+                tiles[pos.x][pos.y][pos.z].tile = Tile.Light;
+                localMaximums.RemoveAt(lights[i].localMaximumIndex);
                 lights[i].position = closest.point;
                 lights[i].direction = closest.normal;
                 lights[i].attachedToWall = true;

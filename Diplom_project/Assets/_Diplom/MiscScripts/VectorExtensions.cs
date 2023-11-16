@@ -40,5 +40,10 @@ public static class VectorExtensions
         return vector;
     }
 
+    public static Vector3Int ToVector3Int(this Vector3 vector)
+    {
+        return new Vector3Int((int)vector.x, (int)vector.y, (int)vector.z);
+    }
+
 }
 
