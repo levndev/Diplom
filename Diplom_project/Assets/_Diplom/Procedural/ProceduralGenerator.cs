@@ -15,6 +15,7 @@ public class ProceduralGenerator : MonoBehaviour
     [SerializeField] private GameObject levelGeometry;
     [SerializeField] private BlockGenerator blockGenerator;
     [SerializeField] private LightGenerator lightGenerator;
+    [SerializeField] private BlobMapper blobMapper;
     [SerializeField] private SpawnAndExitGenerator spawnExitGenerator;
     [SerializeField] private EnemyGenerator enemyGenerator;
     [SerializeField] private NavGraph navGraph;
@@ -85,52 +86,53 @@ public class ProceduralGenerator : MonoBehaviour
             }
         }
 
-        List<Vector3Int> localMaximums = new();
-        void checkMaximum(Vector3Int current)
+        void checkMaximum(BlobData blob, Vector3Int current)
         {
             foreach (var neighbour in GenerationUtils.GetNeighbours(noise, current,
                     generatedSize, GenerationUtils.AllDirections))
             {
                 if (Comparison.Compare(noise[current.x][current.y][current.z],
                     neighbour, localMaximumComparison))
-                    localMaximums.Add(current);
+                    blob.localMaximums.Add(current);
             }
         }
 
         if (blockGenerator != null)
         {
             tiles = blockGenerator.GenerateBlocks(noise, generatedSize, levelGeometry);
-            var spawnAndExit = spawnExitGenerator.Generate(tiles, generatedSize);
 
-            for (int x = 0; x < width; x++)
+            if (blobMapper != null)
             {
-                for (int y = 0; y < height; y++)
+                (var _, var biggestBlob) = blobMapper.MapBlobs(tiles, generatedSize);
+
+                foreach(var point in biggestBlob.tiles)
                 {
-                    for (int z = 0; z < length; z++)
+
+                    if (tiles.ByVec(point).tile == Tile.None
+                        && !tiles.ByVec(point).hollowed)
                     {
-                        if (tiles[x][y][z].tile == Tile.None
-                            && !tiles[x][y][z].hollowed)
-                        {
-                            checkMaximum(new Vector3Int(x, y, z));
-                        }
+                        checkMaximum(biggestBlob, point);
                     }
                 }
-            }
 
-            if (lightGenerator != null)
-            {
-                lightGenerator.GenerateLights(tiles, localMaximums, levelGeometry); ;
-            }
+                spawnExitGenerator.Generate(biggestBlob, tiles, generatedSize);
 
-            if (navGraph != null)
-            {
-                navGraph.UpdateGeometry(tiles, generatedSize);
-
-                path = navGraph.AStar(spawnAndExit.Item1, spawnAndExit.Item2, true);
-
-                if (enemyGenerator != null)
+                if (lightGenerator != null)
                 {
-                    enemyGenerator.Generate(localMaximums, levelGeometry);
+                    lightGenerator.GenerateLights(tiles,
+                        biggestBlob.localMaximums,
+                        levelGeometry);
+                }
+
+                if (navGraph != null)
+                {
+                    navGraph.UpdateGeometry(tiles, generatedSize);
+
+                    if (enemyGenerator != null)
+                    {
+                        enemyGenerator.Generate(biggestBlob.localMaximums,
+                            navGraph);
+                    }
                 }
             }
         }

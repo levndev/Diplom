@@ -42,8 +42,13 @@ public static class VectorExtensions
 
     public static Vector3Int ToVector3Int(this Vector3 vector)
     {
-        return new Vector3Int((int)vector.x, (int)vector.y, (int)vector.z);
+        return new Vector3Int(
+            Mathf.RoundToInt(vector.x),
+            Mathf.RoundToInt(vector.y),
+            Mathf.RoundToInt(vector.z));
     }
+
+
 
 }
 

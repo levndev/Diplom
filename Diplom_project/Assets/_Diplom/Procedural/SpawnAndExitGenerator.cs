@@ -9,175 +9,65 @@ public class SpawnAndExitGenerator : MonoBehaviour
 {
     [SerializeField] private GameObject spawnPrefab;
     [SerializeField] private GameObject exitPrefab;
-
-    private List<BlobData> blobs;
-
-    [SerializeField] private bool drawBlobGizmos;
     [SerializeField] private bool drawSpawnExitGizmos;
 
     private Vector3Int spawnPos;
     private Vector3Int exitPos;
 
-    private class BlobData
+    public Tuple<Vector3Int, Vector3Int> Generate(BlobData blob, TileData[][][] tiles, Vector3Int size)
     {
-        public List<Vector3Int> tiles = new();
-        public int size = 0;
-        public Color color;
-    }
+        spawnPos = Vector3Int.zero;
+        exitPos = Vector3Int.zero;
 
-    private class FloodFillData
-    {
-        public bool visited = false;
-        public Vector3Int cameFrom;
-    }
+        float diagonal = (size - Vector3Int.one * 5).magnitude;
 
-    public Tuple<Vector3Int, Vector3Int> Generate(TileData[][][] tiles, Vector3Int size)
-    {
-        FloodFillData[][][] fillData;
-
-        fillData = new FloodFillData[size.x][][];
-        for (int x = 0; x < size.x; x++)
+        float maxDistance = float.MinValue;
+        bool found = false;
+        foreach (var i in blob.tiles)
         {
-            fillData[x] = new FloodFillData[size.y][];
-            for (int y = 0; y < size.y; y++)
+            foreach (var j in blob.tiles)
             {
-                fillData[x][y] = new FloodFillData[size.z];
-                for (int z = 0; z < size.z; z++)
+                if (i != j)
                 {
-                    fillData[x][y][z] = new FloodFillData();
-                }
-            }
-        }
-
-        blobs = new();
-
-        for (int x = 0; x < size.x; x++)
-        {
-            for (int y = 0; y < size.y; y++)
-            {
-                for (int z = 0; z < size.z; z++)
-                {
-                    TileData tile = tiles[x][y][z];
-                    if (tile.tile == Tile.None && !fillData[x][y][z].visited && !tiles[x][y][z].hollowed)
+                    float distance = (j - i).magnitude;
+                    if (distance > maxDistance)
                     {
-                        blobs.Add(FloodFill(tiles, fillData, new Vector3Int(x, y, z), size));
+                        maxDistance = distance;
+                        spawnPos = i;
+                        exitPos = j;
+                        if (distance > diagonal)
+                            found = true;
                     }
-                }
-            }
-        }
-        if (blobs.Count > 0)
-        {
-            BlobData biggestBlob = null;
-            int maxSize = int.MinValue;
-            for (int i = 0; i < blobs.Count; i++)
-            {
-                if (blobs[i].size > maxSize)
-                {
-                    maxSize = blobs[i].size;
-                    biggestBlob = blobs[i];
-                }
-            }
-
-            spawnPos = Vector3Int.zero;
-            exitPos = Vector3Int.zero;
-
-            float diagonal = (size - Vector3Int.one * 5).magnitude;
-
-            float maxDistance = float.MinValue;
-            bool found = false;
-            foreach(var i in biggestBlob.tiles)
-            {
-                
-                foreach (var j in biggestBlob.tiles)
-                {
-                    if (i != j)
-                    {
-                        float distance = (j - i).magnitude;
-                        if (distance > maxDistance)
-                        {
-                            maxDistance = distance;
-                            spawnPos = i;
-                            exitPos = j;
-                            if (distance > diagonal)
-                                found = true;
-                        }
-                    }
-                    if (found)
-                        break;
                 }
                 if (found)
                     break;
             }
-
-            if (spawnPrefab != null)
-            {
-                var spawn = Instantiate(spawnPrefab);
-                tiles[spawnPos.x][spawnPos.y][spawnPos.z].tile = Tile.None;
-                spawn.transform.position = spawnPos;
-            }
-
-            if (exitPrefab != null)
-            {
-                var exit = Instantiate(exitPrefab);
-                tiles[exitPos.x][exitPos.y][exitPos.z].tile = Tile.None;
-                exit.transform.position = exitPos;
-            }
-
-            Debug.Log(string.Format("{0} Blobs", blobs.Count));
-            Debug.Log(string.Format("Biggest blob size: {0}", biggestBlob.size));
-
-        }
-        return new Tuple<Vector3Int, Vector3Int>(spawnPos, exitPos);
-    }
-
-    private BlobData FloodFill(TileData[][][] tiles, FloodFillData[][][] fillData,
-                                Vector3Int pos, Vector3Int size)
-    {
-        BlobData blob = new ();
-        blob.color = UnityEngine.Random.ColorHSV();
-        Queue<Vector3Int> frontier = new();
-        frontier.Enqueue(pos);
-        fillData[pos.x][pos.y][pos.z].visited = true;
-        int cycles = 0;
-        while(frontier.Count > 0)
-        {
-            Vector3Int current = frontier.Dequeue();
-            blob.tiles.Add(current);
-            blob.size++;
-            foreach (var direction in GenerationUtils.OrthoDirections)
-            {
-                var next = current + direction;
-                if (GenerationUtils.InBounds(size, next) && !fillData[next.x][next.y][next.z].visited)
-                {
-                    TileData tile = tiles[next.x][next.y][next.z];
-                    if (tile.tile == Tile.None && !tile.hollowed)
-                    {
-                        frontier.Enqueue(next);
-                        fillData[next.x][next.y][next.z].visited = true;
-                        fillData[next.x][next.y][next.z].cameFrom = current;
-                    }
-                }
-            }
-            cycles++;
-            if (cycles > 10000)
+            if (found)
                 break;
         }
-        return blob;
+
+        if (spawnPrefab != null)
+        {
+            var spawn = Instantiate(spawnPrefab);
+            tiles[spawnPos.x][spawnPos.y][spawnPos.z].tile = Tile.None;
+            blob.localMaximums.Remove(spawnPos);
+            spawn.transform.position = spawnPos;
+        }
+
+        if (exitPrefab != null)
+        {
+            var exit = Instantiate(exitPrefab);
+            tiles[exitPos.x][exitPos.y][exitPos.z].tile = Tile.None;
+            blob.localMaximums.Remove(exitPos);
+            exit.transform.position = exitPos;
+        }
+
+
+        return new Tuple<Vector3Int, Vector3Int>(spawnPos, exitPos);
     }
 
     private void OnDrawGizmos()
     {
-        if (drawBlobGizmos && blobs != null && blobs.Count > 0)
-        {
-            foreach(var blob in blobs)
-            {
-                Gizmos.color = blob.color;
-                foreach (var tile in blob.tiles)
-                {
-                    Gizmos.DrawWireCube(tile, Vector3.one);
-                }
-            }
-        }
         if (drawSpawnExitGizmos)
         {
             Gizmos.color = Color.white;

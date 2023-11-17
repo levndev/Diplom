@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
@@ -77,11 +78,28 @@ public class NavGraph : MonoBehaviour
     {
         float heuristic(Vector3Int a, Vector3Int b)
         {
-            //return (
+            //return (b - a).magnitude;
             return Mathf.Abs(b.x - a.x) + Mathf.Abs(b.y - a.y) + Mathf.Abs(b.z - a.z);
         }
 
-        NavPath path = new();
+        if (start == goal)
+        {
+            NavPath result = new();
+            result.points.Add(goal);
+            return result;
+        }
+
+        if (navData.ByVec(start).cachedPaths.Count > 0)
+        {
+            foreach (var cachedPath in navData.ByVec(start).cachedPaths)
+            {
+                if (cachedPath.start == start && cachedPath.goal == goal)
+                {
+                    return cachedPath;
+                }
+            }
+        }
+
 
         for (int x = 0; x < size.x; x++)
         {
@@ -117,7 +135,7 @@ public class NavGraph : MonoBehaviour
                     && navData.ByVec(next).traversible)
                 {
                     var nextPoint = points.ByVec(next);
-                    var newCost = nextPoint.costSoFar + 1;
+                    var newCost = points.ByVec(current).costSoFar + 1.0f;
                     if (!nextPoint.visited
                         || newCost < nextPoint.costSoFar)
                     {
@@ -131,6 +149,9 @@ public class NavGraph : MonoBehaviour
             }
         }
 
+
+        NavPath path = new();
+
         if (found)
         {
             bool building = true;
@@ -143,9 +164,25 @@ public class NavGraph : MonoBehaviour
                     building = false;
                 current = points.ByVec(current.cameFrom);
             }
-            path.points.Reverse();
+            path.goal = goal;
+            path.start = start;
+        }
+        else
+        {
+            return null;
         }
 
+        if (cache)
+        {
+            NavPath goalToStart = new();
+            goalToStart.goal = start;
+            goalToStart.start = goal;
+            goalToStart.points = path.points.ToList();
+            navData.ByVec(goal).cachedPaths.Add(goalToStart);
+        }
+        path.points.Reverse();
+        if (cache)
+            navData.ByVec(start).cachedPaths.Add(path);
         return path;
     }
 
