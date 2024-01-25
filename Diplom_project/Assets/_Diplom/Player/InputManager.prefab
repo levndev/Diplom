@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 842617719330741299}
   - component: {fileID: 5114824880842479162}
   - component: {fileID: 3019202724313535722}
-  - component: {fileID: 3716252067623153931}
   m_Layer: 0
   m_Name: InputManager
   m_TagString: Untagged
@@ -94,10 +93,10 @@ MonoBehaviour:
     m_ActionName: Default/Move[/Keyboard/space,/Keyboard/ctrl,/Keyboard/a,/Keyboard/d,/Keyboard/w,/Keyboard/s]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3716252067623153931}
-        m_TargetAssemblyTypeName: PlayerInteraction, Assembly-CSharp
-        m_MethodName: OnFlashlight
-        m_Mode: 0
+      - m_Target: {fileID: 11400000, guid: 9a3f13338a320f74795280548755d7b1, type: 2}
+        m_TargetAssemblyTypeName: GameEvent, Assembly-CSharp
+        m_MethodName: Raise
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -110,10 +109,10 @@ MonoBehaviour:
     m_ActionName: Default/Flashlight[/Keyboard/f]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3716252067623153931}
-        m_TargetAssemblyTypeName: PlayerInteraction, Assembly-CSharp
-        m_MethodName: OnFreeze
-        m_Mode: 0
+      - m_Target: {fileID: 11400000, guid: c86609c0c9b6fba458f602a19a9bcfcb, type: 2}
+        m_TargetAssemblyTypeName: GameEvent, Assembly-CSharp
+        m_MethodName: Raise
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -210,17 +209,3 @@ MonoBehaviour:
     localValue: {x: 0, y: 0, z: 0}
     variable: {fileID: 11400000, guid: e79240d110ae4534789d2e620d7d7a6b, type: 2}
   mouseSensitivity: 0.2
---- !u!114 &3716252067623153931
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7483407738753263017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f786a8f6eda3bcc42a678f82b5b70b4f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  flashlight: {fileID: 0}
-  kbmInput: {fileID: 3019202724313535722}

@@ -1,26 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
     [SerializeField] private Light flashlight;
-    [SerializeField] private PlayerKBMInput kbmInput;
-    public void OnFlashlight(InputAction.CallbackContext context)
+    [SerializeField] private MonoBehaviour playerMovement;
+    [SerializeField] private MonoBehaviour playerLook;
+
+    public void ToggleFlashlight()
     {
-        if (context.phase == InputActionPhase.Performed)
-        {
+        if (flashlight != null)
             flashlight.enabled = !flashlight.enabled;
-        }
     }
 
-    public void OnFreeze(InputAction.CallbackContext context)
+    public void ToggleFreeze()
     {
-        if (context.phase == InputActionPhase.Performed)
-        {
-            kbmInput.enabled = !kbmInput.enabled;
-        }
+        if (playerMovement != null)
+            playerMovement.enabled = !playerMovement.enabled;
+        if (playerLook != null)
+            playerLook.enabled = !playerLook.enabled;
     }
 }

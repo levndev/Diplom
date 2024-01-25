@@ -18,7 +18,6 @@ public class NavAgent : MonoBehaviour
 
     [SerializeField] private bool drawPathGizmo;
 
-
     public void SetNavGraph(NavGraph navGraph)
     {
         this.navGraph = navGraph;

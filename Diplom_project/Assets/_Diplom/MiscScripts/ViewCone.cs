@@ -10,11 +10,12 @@ public class ViewCone : MonoBehaviour
     [SerializeField] private float fov;
     [SerializeField] private float range;
     [SerializeField] private Light spotLight;
+    [SerializeField] private ConeMeshGenerator coneMeshGenerator;
     [SerializeField] private Transform detectorPoint;
     [SerializeField] private Reference<GameObject> target;
-    [SerializeField] private UnityEvent targetDetected;
-    [SerializeField] private UnityEvent targetLost;
-
+    [SerializeField] private UnityEvent<GameObject> targetDetected;
+    [SerializeField] private UnityEvent<GameObject> targetLost;
+    [SerializeField] private UnityEvent<GameObject> targetSeen;
     private float halfFov;
     private bool detected;
 
@@ -22,6 +23,11 @@ public class ViewCone : MonoBehaviour
     {
         halfFov = fov / 2;
         detected = false;
+        if (coneMeshGenerator != null)
+        {
+            coneMeshGenerator.length = range;
+            coneMeshGenerator.angle = fov;
+        }
     }
 
     // Start is called before the first frame update
@@ -55,10 +61,14 @@ public class ViewCone : MonoBehaviour
                 LayerMask mask = LayerMask.GetMask("Player");
                 if (Physics.Raycast(detectorPoint.position, toTarget, out RaycastHit hit, distance))
                 {
-                    if (mask == (mask | (1 << hit.collider.gameObject.layer)) && !detected)
+                    if (mask == (mask | (1 << hit.collider.gameObject.layer)))
                     {
-                        detected = true;
-                        targetDetected?.Invoke();
+                        if (!detected)
+                        {
+                            detected = true;
+                            targetDetected?.Invoke(target.Get());
+                        }
+                        targetSeen?.Invoke(target.Get());
                         return;
                     }
                 }
@@ -67,7 +77,7 @@ public class ViewCone : MonoBehaviour
         if (detected)
         {
             detected = false;
-            targetLost?.Invoke();
+            targetLost?.Invoke(target.Get());
         }
     }
 }

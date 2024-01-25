@@ -12,5 +12,6 @@ public abstract class IAgentMovement : MonoBehaviour
     }
 
     public abstract void MoveTowards(Vector3Int goal);
+    public abstract void LookTowards(Vector3 target);
     public abstract UpdateMode GetUpdateMode();
 }

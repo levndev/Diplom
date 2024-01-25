@@ -15,11 +15,12 @@ public class LightGenerator : MonoBehaviour
 
     private class LightData
     {
-        public Vector3 position;
+        public Vector3Int position;
+        public Vector3 adjustedPosition;
         public Vector3 direction;
         public bool attachedToWall = false;
         public int localMaximumIndex;
-        public LightData(Vector3 position, Vector3 direction, int localMaximumIndex)
+        public LightData(Vector3Int position, Vector3 direction, int localMaximumIndex)
         {
             this.position = position;
             this.direction = direction;
@@ -72,10 +73,9 @@ public class LightGenerator : MonoBehaviour
             if (hits.Count > 0)
             {
                 var closest = hits.OrderBy(x => x.distance).First();
-                Vector3Int pos = localMaximums[lights[i].localMaximumIndex];
-                tiles[pos.x][pos.y][pos.z].tile = Tile.Light;
-                localMaximums.RemoveAt(lights[i].localMaximumIndex);
-                lights[i].position = closest.point;
+                //tiles.ByVec(closest.point.ToVector3Int()).tile = Tile.Light;
+                localMaximums.Remove(lights[i].position);
+                lights[i].adjustedPosition = closest.point;
                 lights[i].direction = closest.normal;
                 lights[i].attachedToWall = true;
             }
@@ -88,7 +88,7 @@ public class LightGenerator : MonoBehaviour
                 if (wallLightPrefab != null)
                 {
                     var light = Instantiate(wallLightPrefab, levelGeometry.transform);
-                    light.transform.localPosition = lightData.position;
+                    light.transform.localPosition = lightData.adjustedPosition;
                     light.transform.rotation =
                         Quaternion.LookRotation(lightData.direction, Vector3.up);
                 }

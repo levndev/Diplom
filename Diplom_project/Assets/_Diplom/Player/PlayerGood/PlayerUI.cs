@@ -5,14 +5,15 @@ using UnityEngine;
 using UnityEngine.UI;
 public class PlayerUI : MonoBehaviour
 {
-    [SerializeField] private LightIntensityCalculator intensityCalculator;
+    [SerializeField] private Reference<float> playerLightIntensity;
+    [SerializeField] private Reference<float> playerLightIntensityMax;
     [SerializeField] private Slider intensityReadoutSlider;
     [SerializeField] private TextMeshProUGUI intensityReadoutText;
     // Start is called before the first frame update
     private void OnEnable()
     {
-        if (intensityReadoutSlider != null && intensityCalculator != null)
-            intensityReadoutSlider.maxValue = intensityCalculator.MaxIntensity();
+        if (intensityReadoutSlider != null && playerLightIntensityMax != null)
+            intensityReadoutSlider.maxValue = playerLightIntensityMax.Get();
         if (intensityReadoutText != null)
             intensityReadoutText.text = string.Format("{0}", 0);
     }
@@ -20,9 +21,9 @@ public class PlayerUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (intensityCalculator != null)
+        if (playerLightIntensity != null)
         {
-            var value = intensityCalculator.CurrentIntensity();
+            var value = playerLightIntensity.Get();
             if (intensityReadoutSlider != null)
                 intensityReadoutSlider.value = value;
             if (intensityReadoutText != null)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using TMPro.EditorUtilities;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEditor.Search;
@@ -24,6 +25,12 @@ public class ProceduralGenerator : MonoBehaviour
     [SerializeField] private PerlinSettings perlinSettings;
 
     [SerializeField] private Comparison.Type localMaximumComparison;
+
+    [SerializeField] private bool drawLocalMaximumGizmos;
+
+    private List<GameObject> spawnedGameobjects = new();
+
+    private List<Vector3Int> localMaximums;
 
     private float seed;
 
@@ -86,16 +93,30 @@ public class ProceduralGenerator : MonoBehaviour
             }
         }
 
+
+        localMaximums = new();
+
         void checkMaximum(BlobData blob, Vector3Int current)
         {
+            bool add = true;
             foreach (var neighbour in GenerationUtils.GetNeighbours(noise, current,
                     generatedSize, GenerationUtils.AllDirections))
             {
-                if (Comparison.Compare(noise[current.x][current.y][current.z],
+                if (!Comparison.Compare(noise.ByVec(current),
                     neighbour, localMaximumComparison))
-                    blob.localMaximums.Add(current);
+                {
+                    add = false;
+                }
+            }
+
+            if (add)
+            {
+                blob.localMaximums.Add(current);
+                localMaximums.Add(current);
             }
         }
+
+        spawnedGameobjects = new();
 
         if (blockGenerator != null)
         {
@@ -114,9 +135,9 @@ public class ProceduralGenerator : MonoBehaviour
                         checkMaximum(biggestBlob, point);
                     }
                 }
+                var spawnAndExit = spawnExitGenerator.Generate(biggestBlob, tiles, generatedSize);
 
-                spawnExitGenerator.Generate(biggestBlob, tiles, generatedSize);
-
+                spawnedGameobjects.AddRange(spawnAndExit);
                 if (lightGenerator != null)
                 {
                     lightGenerator.GenerateLights(tiles,
@@ -130,8 +151,9 @@ public class ProceduralGenerator : MonoBehaviour
 
                     if (enemyGenerator != null)
                     {
-                        enemyGenerator.Generate(biggestBlob.localMaximums,
+                        var enemies = enemyGenerator.Generate(biggestBlob.localMaximums,
                             navGraph);
+                        spawnedGameobjects.AddRange(enemies);
                     }
                 }
             }
@@ -146,6 +168,13 @@ public class ProceduralGenerator : MonoBehaviour
         foreach (Transform child in levelGeometry.transform)
         {
             Destroy(child.gameObject);
+        }
+        if (spawnedGameobjects != null)
+        {
+            for (int i = spawnedGameobjects.Count - 1; i >= 0; --i)
+            {
+                Destroy(spawnedGameobjects[i]);
+            }
         }
     }
 
@@ -172,6 +201,14 @@ public class ProceduralGenerator : MonoBehaviour
         {
             Gizmos.color = UnityEngine.Color.red;
             foreach (var point in path.points)
+            {
+                Gizmos.DrawWireCube(point, Vector3.one);
+            }
+        }
+        if (drawLocalMaximumGizmos)
+        {
+            Gizmos.color = UnityEngine.Color.red;
+            foreach (var point in localMaximums)
             {
                 Gizmos.DrawWireCube(point, Vector3.one);
             }

@@ -78,7 +78,6 @@ public class NavGraph : MonoBehaviour
     {
         float heuristic(Vector3Int a, Vector3Int b)
         {
-            //return (b - a).magnitude;
             return Mathf.Abs(b.x - a.x) + Mathf.Abs(b.y - a.y) + Mathf.Abs(b.z - a.z);
         }
 

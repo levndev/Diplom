@@ -12,6 +12,7 @@ public class BasicAgentMovement : IAgentMovement
         return UpdateMode.Update;
     }
 
+
     public override void MoveTowards(Vector3Int goal)
     {
         var direction = goal - transform.position;
@@ -26,7 +27,14 @@ public class BasicAgentMovement : IAgentMovement
         {
             transform.position += direction * move;
         }
+        LookTowards(goal);
+    }
+
+    public override void LookTowards(Vector3 target)
+    {
         float singleStep = Mathf.Deg2Rad * turnSpeed * Time.deltaTime;
+        var direction = target - transform.position;
+        direction.Normalize();
         var newDirection = Vector3.RotateTowards(transform.forward, direction, singleStep, 0.0f);
         transform.rotation = Quaternion.LookRotation(newDirection);
     }

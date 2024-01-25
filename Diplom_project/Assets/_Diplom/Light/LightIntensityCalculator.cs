@@ -7,7 +7,7 @@ public class LightIntensityCalculator : MonoBehaviour
     [SerializeField] private LightSet lights;
     [SerializeField] private Reference<float> multiplier;
     [SerializeField] private Reference<float> maxValue;
-
+    [SerializeField] private Reference<float> resultValue;
     private float currentIntensity;
 
 
@@ -55,5 +55,9 @@ public class LightIntensityCalculator : MonoBehaviour
         }
         if (currentIntensity > maxValue.Value)
             currentIntensity = maxValue;
+        if (resultValue != null)
+        {
+            resultValue.Set(currentIntensity);
+        }
     }
 }
