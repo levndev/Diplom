@@ -2,9 +2,6 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-/Assets/
-!/Assets/_Diplom
-!/Assets/_Diplom.meta
 
 /[Ll]ibrary/
 /[Tt]emp/
